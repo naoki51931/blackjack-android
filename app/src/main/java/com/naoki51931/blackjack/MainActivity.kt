@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -36,6 +37,30 @@ fun blackjack(h:List<Card>)=h.size==2&&score(h)==21
 class MainActivity:ComponentActivity(){override fun onCreate(b:Bundle?){super.onCreate(b);setContent{BlackjackApp()}}}
 
 @Composable fun BlackjackApp(){
+ var showTitle by remember{mutableStateOf(true)}
+ MaterialTheme(colorScheme=darkColorScheme(primary=Color(0xFFFFD166),background=Color(0xFF061A12),surface=Color(0xFF0C3B2B))){
+  AnimatedContent(targetState=showTitle,label="screen"){title->if(title)TitleScreen{showTitle=false}else GameScreen{showTitle=true}}
+ }
+}
+
+@Composable fun TitleScreen(onStart:()->Unit){
+ Box(Modifier.fillMaxSize().background(Color(0xFF061A12)).statusBarsPadding().navigationBarsPadding().padding(24.dp),contentAlignment=Alignment.Center){
+  Column(horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){
+   Text("♠   ♥",fontSize=54.sp,fontWeight=FontWeight.Black,color=Color.White)
+   Spacer(Modifier.height(10.dp))
+   Text("21",fontSize=104.sp,fontWeight=FontWeight.Black,color=Color(0xFFFFD166))
+   Text("BLACK JACK",fontSize=35.sp,fontWeight=FontWeight.Black,color=Color.White,letterSpacing=2.sp)
+   Spacer(Modifier.height(12.dp))
+   Text("♣  A   K  ♦",fontSize=30.sp,fontWeight=FontWeight.Bold,color=Color(0xFFFFD166))
+   Spacer(Modifier.height(44.dp))
+   Button(onClick=onStart,Modifier.fillMaxWidth().height(58.dp)){Text("START",fontSize=22.sp,fontWeight=FontWeight.Black)}
+   Spacer(Modifier.height(14.dp))
+   Text("BLACKJACK 21",fontSize=13.sp,color=Color.LightGray,textAlign=TextAlign.Center)
+  }
+ }
+}
+
+@Composable fun GameScreen(onTitle:()->Unit){
  val context=LocalContext.current
  var shoe by remember{mutableStateOf(deck())};var hand by remember{mutableStateOf(emptyList<Card>())};var splitHand by remember{mutableStateOf<List<Card>?>(null)};var dealer by remember{mutableStateOf(emptyList<Card>())}
  var chips by remember{mutableIntStateOf(1000)};var bet by remember{mutableIntStateOf(50)};var activeBet by remember{mutableIntStateOf(0)};var wins by remember{mutableIntStateOf(0)};var streak by remember{mutableIntStateOf(0)}
@@ -51,9 +76,9 @@ class MainActivity:ComponentActivity(){override fun onCreate(b:Bundle?){super.on
  LaunchedEffect(flash){if(flash){delay(650);flash=false}}
  val pulse by animateFloatAsState(if(flash)1.18f else 1f,spring(dampingRatio=.45f),label="pulse")
  val shake by animateFloatAsState(if(msg=="BUST!")3f else 0f,spring(dampingRatio=.35f),label="shake")
- MaterialTheme(colorScheme=darkColorScheme(primary=Color(0xFFFFD166),background=Color(0xFF061A12),surface=Color(0xFF0C3B2B))){Box(Modifier.fillMaxSize().background(if(flash)Color(0xFF4A3B0B) else Color(0xFF061A12)).rotate(shake)){
+ Box(Modifier.fillMaxSize().background(if(flash)Color(0xFF4A3B0B) else Color(0xFF061A12)).rotate(shake)){
   Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal=14.dp,vertical=8.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.SpaceBetween){
-   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("♠ BLACKJACK",color=Color.White,fontWeight=FontWeight.Black,fontSize=20.sp);Column(horizontalAlignment=Alignment.End){Text("● $chips",color=Color(0xFFFFD166),fontWeight=FontWeight.Bold);Text("W $wins  🔥$streak",color=Color.White,fontSize=12.sp)}}
+   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){TextButton(onClick=onTitle,contentPadding=PaddingValues(0.dp)){Text("‹ TITLE",color=Color.LightGray,fontSize=12.sp)};Text("♠ BLACKJACK",color=Color.White,fontWeight=FontWeight.Black,fontSize=20.sp);Column(horizontalAlignment=Alignment.End){Text("● $chips",color=Color(0xFFFFD166),fontWeight=FontWeight.Bold);Text("W $wins  🔥$streak",color=Color.White,fontSize=12.sp)}}
    Column(horizontalAlignment=Alignment.CenterHorizontally){Text("DEALER",color=Color.LightGray,fontSize=13.sp);CardRow(dealer,!reveal);Text(if(reveal)score(dealer).toString() else "?",fontSize=23.sp,color=Color.White,fontWeight=FontWeight.Bold)}
    Text(msg,Modifier.scale(pulse),fontSize=27.sp,fontWeight=FontWeight.Black,color=if(msg=="BUST!")Color(0xFFFF5252) else Color(0xFFFFD166))
    Column(horizontalAlignment=Alignment.CenterHorizontally){Text("YOU • ${score(hand)}",color=Color.White,fontSize=18.sp,fontWeight=FontWeight.Bold);CardRow(hand,false);splitHand?.let{Text("SPLIT • ${score(it)}",color=Color(0xFFFFD166));CardRow(it,false)}}
@@ -62,7 +87,7 @@ class MainActivity:ComponentActivity(){override fun onCreate(b:Bundle?){super.on
    else CircularProgressIndicator(color=Color(0xFFFFD166))
   }
   AnimatedVisibility(flash,enter=fadeIn(),exit=fadeOut(),modifier=Modifier.align(Alignment.Center)){Box(Modifier.size(220.dp).border(4.dp,Color(0xFFFFD166),CircleShape),contentAlignment=Alignment.Center){Text(if(msg=="BLACKJACK!")"21" else "★",fontSize=80.sp,fontWeight=FontWeight.Black,color=Color(0xFFFFD166),modifier=Modifier.alpha(.7f))}}
- }}
+ }
 }
 
 @Composable fun CardRow(cards:List<Card>,hidden:Boolean){Row(horizontalArrangement=Arrangement.spacedBy((-15).dp)){cards.forEachIndexed{i,c->PlayingCard(c,hidden&&i==1,i)}}}
