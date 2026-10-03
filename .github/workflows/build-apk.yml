@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build and Release Android APK
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -40,3 +40,16 @@ jobs:
           path: blackjack21.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish fixed v1.0 release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          name: Blackjack 21 v1.0
+          body: |
+            Blackjack 21 Android APK v1.0
+
+            Latest v1.0 build. The version number stays at 1.0.
+          files: blackjack21.apk
+          prerelease: false
+          make_latest: true
