@@ -1,0 +1,1 @@
+<resources><style name="Theme.Blackjack21" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:windowLightStatusBar">false</item><item name="android:statusBarColor">#071A13</item><item name="android:navigationBarColor">#071A13</item></style></resources>
